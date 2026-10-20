@@ -65,15 +65,6 @@ Relative error definition: `(calc - ref) / ref * 100%` (cells with NaN/0 referen
 
 ---
 
-## 02 Run keff
-
-<div align="center">
-  <img src="./core_xy.png" width="48%" alt="fig9" />
-  <img src="./core_xz.png" width="48%" alt="fig11" />
-</div>
-
----
-
 ## 03 Tally
 
 ```
@@ -87,15 +78,6 @@ SH4 in              0.98991  0.00019    0.98971    0.00001  0.02054
 All rods in (ARI)   0.85824  0.00019    0.85791    0.00002  0.03821   
 RE1 at D5 in        1.02256  0.00021    1.02207    0.00001  0.04817 
 ```
-
-**Fig.9/11: Radial Assembly Power (RE1 D5 in)**
-<div align="center">
-  <img src="./figs/t1-ref-rad_pow.png" width="48%" alt="fig9" />
-  <img src="./figs/t2-ref-pin_pow.png" width="48%" alt="fig11" />
-</div>
-
-**Fig.10: Axial Power Distribution (RE1 D5 in)**
-![Fig10](./figs/t3-refax_pow.png)
 
 ---
 

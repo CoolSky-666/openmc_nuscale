@@ -9,41 +9,52 @@ This repository helps reproduce/compare selected results of the NuScale benchmar
 
 ## Project Layout
 
-- `ref/`: reference inputs (e.g. `02-Reference_Solution_v3.xlsx`, benchmark PDF)
-- `data/`: OpenMC outputs per case (each folder should contain `statepoint.*.h5`)
-- `figs/`: generated figures (PNG)
-- `*.py`: scripts (materials/run/read/plot)
+- `ref/`: reference inputs (`01-Material_Compositions_v3.xlsx`, `02-Reference_Solution_v3.xlsx`, `Changelog.md`)
+- `data/`: OpenMC outputs per case (created by the run scripts; each case folder contains `statepoint.*.h5`)
+- `figs/`: generated figures (PNG) and `keff_summary.csv`
+- `*.py`:
+  - run: `1-core_run.py` (six control-rod cases), `1-core_run_single_RE1.py` (`RE1 at D5 in`)
+  - post-processing: `2-plot_figs.py`, `3-read_keff.py`, `read_sp.py`, `4-error_cr.py`, `5-error_ref.py`
+  - model modules: `constants.py`, `materials.py`, `pins.py`, `lat.py`, `core.py`
 
 ## Requirements
 
 - Python 3
 - `numpy`, `pandas`, `matplotlib`, `openpyxl`
-- `openmc` (required for reading `statepoint.*.h5`; optional for running simulations)
+- `openmc` (required for both running the simulations and reading `statepoint.*.h5`)
 
 ## Usage
 
-### 1) Re-plot paper figures from the reference Excel
+### 1) Run the benchmark cases (OpenMC)
 
-- Fig.9 (7×7 radial assembly power, Ref/CR side-by-side): `python 01-plotfig9.py`
-- Fig.10 (axial power): `python 01-plotfig10.py`
-- Fig.11 (pin power, Ref/CR side-by-side): `python 01-plotfig11a.py`
+- All six control-rod configurations: `python 1-core_run.py`
+  - Cases: `All rods out (ARO)`, `RE1 in`, `RE2 in`, `SH3 in`, `SH4 in`, `All rods in (ARI)`
+  - Each case runs in `data/<case>/` and additionally writes `nuscale_core_<case>_xy.png` / `nuscale_core_<case>_xz.png` there.
+- `RE1 at D5 in` (single rod inserted at position D5): `python 1-core_run_single_RE1.py`
+- The cross sections path is set inside the run scripts (`openmc.config['cross_sections']`); adjust it to your local installation before running.
 
-### 2) Read keff and compute relative error vs. reference
+### 2) Re-plot paper figures from the reference Excel
 
-- Script: `python 03-read_keff.py`
-- It scans `data/*/statepoint.*.h5` (picks the largest statepoint index), reads `k-eff` from `ref/02-Reference_Solution_v3.xlsx` (`k-eff + CRW` sheet), prints an aligned table, and computes `rel_err(%)`.
+- Script: `python 2-plot_figs.py`
+- Reads `ref/02-Reference_Solution_v3.xlsx` and writes `figs/fig9-rppf_heatmap.png` (Fig.9), `figs/fig10-pow_ax.png` (Fig.10) and `figs/fig11-pinpower-ref.png` (Fig.11).
 
-### 3) Read tallies from statepoint and plot (rad/pin/ax)
+### 3) Read keff and compute relative error vs. reference
 
-- Script: `python 03-read_tally.py`
-- Outputs: `1-rad_pow.png`, `2-pin_pow.png`, `./figs/03-ref-ax_pow.png`, etc.
+- Script: `python 3-read_keff.py`
+- It scans `data/<case>/statepoint.*.h5` (picks the largest statepoint index), reads `k-eff` from `ref/02-Reference_Solution_v3.xlsx` (`k-eff + CRW` sheet), prints an aligned table, computes `rel_err(%)` and writes `figs/keff_summary.csv`.
 
-### 4) Relative error plots (Fig.9 / Fig.10 / Fig.11)
+### 4) Read tallies from statepoint and plot (rad/pin/ax)
 
-- Reference (ARO): `python 04-error_ref.py`
+- Script: `python read_sp.py`
+- The statepoint file is hard-coded in the script (`statepoint.300.h5`); point it to the case you want to inspect.
+- Outputs: `1-rad_pow.png`, `2-pin_pow.png`, `3-ax_pow.png`.
+
+### 5) Relative error plots (Fig.9 / Fig.10 / Fig.11)
+
+- Reference (ARO): `python 5-error_ref.py`
   - Outputs: `figs/err_fig9_ref.png`, `figs/err_fig10_ref.png`, `figs/err_fig11_ref.png`
-- CR (RE1 in): `python 04-error_cr.py`
-  - Outputs: `figs/err_fig9_cr.png`, `figs/err_fig10_cr.png`, `figs/err_fig11_cr.png`
+- CR (`RE1 at D5 in`): `python 4-error_cr.py`
+  - Outputs: `figs/err_fig9_cr.png`, `figs/err_fig11_cr.png`
 
 Relative error definition: `(calc - ref) / ref * 100%` (cells with NaN/0 reference are masked).
 
@@ -65,7 +76,7 @@ Relative error definition: `(calc - ref) / ref * 100%` (cells with NaN/0 referen
 
 ---
 
-## 03 Tally
+## 02 Tally
 
 ```
 case                k-eff    k-eff STD  ref_k-eff  ref STD  rel_err(%)
@@ -81,7 +92,7 @@ RE1 at D5 in        1.02256  0.00021    1.02207    0.00001  0.04817
 
 ---
 
-## 04 Relative Error
+## 03 Relative Error
 
 **Reference Relative Error (Fig.9 / Fig.10 / Fig.11)**
 <div align="center">
@@ -90,7 +101,7 @@ RE1 at D5 in        1.02256  0.00021    1.02207    0.00001  0.04817
 </div>
 ![Fig10](figs/err_fig10_ref.png)
 
-**CR (RE1 in) Relative Error (Fig.9 / Fig.10 / Fig.11)**
+**CR (`RE1 at D5 in`) Relative Error (Fig.9 / Fig.10 / Fig.11)**
 <div align="center">
   <img src="./figs/err_fig9_cr.png" width="48%" alt="fig9" />
   <img src="./figs/err_fig11_cr.png" width="48%" alt="fig11" />
